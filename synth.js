@@ -12,28 +12,10 @@ Mad.Synth = function () {
         channels: 0,
         length: 0,
         samples: [
-            // new Float64Array(new ArrayBuffer(8 * 1152)),
-            // new Float64Array(new ArrayBuffer(8 * 1152))
             [],
             []
         ]
     };
-    
-    // this.pcm.clone = function() {
-    //     var copy = {};
-    //     copy.samplerate = this.samplerate;
-    //     copy.channels = this.channels;
-    //     copy.length = this.length;
-    //     copy.samples = [
-    //         // new Float64Array(new ArrayBuffer(8 * 1152)),
-    //         // new Float64Array(new ArrayBuffer(8 * 1152))
-    //         [],
-    //         []
-    //     ];
-    //     copy.samples[0].set(this.samples[0]);
-    //     copy.samples[1].set(this.samples[1]);
-    //     return copy;
-    // }; 
 }
 
 /*
@@ -1025,7 +1007,7 @@ Mad.Synth.prototype.full = function(frame, nch, ns) {
         var pcm2Ptr  = 0;
 
         for (var s = 0; s < ns; ++s) {
-            Mad.Synth.dct32(sbsample[s], phase >> 1, filter[0][phase & 1], filter[1][phase & 1]);
+            this.dct32(sbsample, s, phase >> 1, filter[0][phase & 1], filter[1][phase & 1]);
 
             var pe = phase & ~1;
             var po = ((phase - 1) & 0xf) | 1;
@@ -1143,147 +1125,6 @@ Mad.Synth.prototype.full = function(frame, nch, ns) {
 
 
 /*
- * NAME:    synth.half()
- * DESCRIPTION: perform half frequency PCM synthesis
- */
-
-// Yeah, I don't think so
-
-//static
-//void synth_half(struct mad_synth *synth, struct mad_frame const *frame,
-//      unsigned int nch, unsigned int ns)
-//{
-//  unsigned int phase, ch, s, sb, pe, po;
-//  mad_fixed_t *pcm1, *pcm2, filter[2][2][16][8];
-//  mad_fixed_t const (*sbsample)[36][32];
-//  register mad_fixed_t (*fe)[8], (*fx)[8], (*fo)[8];
-//  register mad_fixed_t const (*Dptr)[32], *ptr;
-//  register mad_fixed64hi_t hi;
-//  register mad_fixed64lo_t lo;
-//
-//  for (ch = 0; ch < nch; ++ch) {
-//    sbsample = &frame.sbsample[ch];
-//    filter   = &synth.filter[ch];
-//    phase    = synth.phase;
-//    pcm1     = synth.pcm.samples[ch];
-//
-//    for (s = 0; s < ns; ++s) {
-//      dct32((*sbsample)[s], phase >> 1,
-//      filter[0][phase & 1], filter[1][phase & 1]);
-//
-//      pe = phase & ~1;
-//      po = ((phase - 1) & 0xf) | 1;
-//
-//      /* calculate 16 samples */
-//
-//      fe = &filter[0][ phase & 1][0];
-//      fx = &filter[0][~phase & 1][0];
-//      fo = &filter[1][~phase & 1][0];
-//
-//      Dptr = &D[0];
-//
-//      ptr = *Dptr + po;
-//      ML0(hi, lo, (*fx)[0], ptr[ 0]);
-//      MLA(hi, lo, (*fx)[1], ptr[14]);
-//      MLA(hi, lo, (*fx)[2], ptr[12]);
-//      MLA(hi, lo, (*fx)[3], ptr[10]);
-//      MLA(hi, lo, (*fx)[4], ptr[ 8]);
-//      MLA(hi, lo, (*fx)[5], ptr[ 6]);
-//      MLA(hi, lo, (*fx)[6], ptr[ 4]);
-//      MLA(hi, lo, (*fx)[7], ptr[ 2]);
-//      MLN(hi, lo);
-//
-//      ptr = *Dptr + pe;
-//      MLA(hi, lo, (*fe)[0], ptr[ 0]);
-//      MLA(hi, lo, (*fe)[1], ptr[14]);
-//      MLA(hi, lo, (*fe)[2], ptr[12]);
-//      MLA(hi, lo, (*fe)[3], ptr[10]);
-//      MLA(hi, lo, (*fe)[4], ptr[ 8]);
-//      MLA(hi, lo, (*fe)[5], ptr[ 6]);
-//      MLA(hi, lo, (*fe)[6], ptr[ 4]);
-//      MLA(hi, lo, (*fe)[7], ptr[ 2]);
-//
-//      *pcm1++ = MLZ(hi, lo);
-//
-//      pcm2 = pcm1 + 14;
-//
-//      for (sb = 1; sb < 16; ++sb) {
-//  ++fe;
-//  ++Dptr;
-//
-//  /* D[32 - sb][i] == -D[sb][31 - i] */
-//
-//  if (!(sb & 1)) {
-//    ptr = *Dptr + po;
-//    ML0(hi, lo, (*fo)[0], ptr[ 0]);
-//    MLA(hi, lo, (*fo)[1], ptr[14]);
-//    MLA(hi, lo, (*fo)[2], ptr[12]);
-//    MLA(hi, lo, (*fo)[3], ptr[10]);
-//    MLA(hi, lo, (*fo)[4], ptr[ 8]);
-//    MLA(hi, lo, (*fo)[5], ptr[ 6]);
-//    MLA(hi, lo, (*fo)[6], ptr[ 4]);
-//    MLA(hi, lo, (*fo)[7], ptr[ 2]);
-//    MLN(hi, lo);
-//
-//    ptr = *Dptr + pe;
-//    MLA(hi, lo, (*fe)[7], ptr[ 2]);
-//    MLA(hi, lo, (*fe)[6], ptr[ 4]);
-//    MLA(hi, lo, (*fe)[5], ptr[ 6]);
-//    MLA(hi, lo, (*fe)[4], ptr[ 8]);
-//    MLA(hi, lo, (*fe)[3], ptr[10]);
-//    MLA(hi, lo, (*fe)[2], ptr[12]);
-//    MLA(hi, lo, (*fe)[1], ptr[14]);
-//    MLA(hi, lo, (*fe)[0], ptr[ 0]);
-//
-//    *pcm1++ = MLZ(hi, lo);
-//
-//    ptr = *Dptr - po;
-//    ML0(hi, lo, (*fo)[7], ptr[31 -  2]);
-//    MLA(hi, lo, (*fo)[6], ptr[31 -  4]);
-//    MLA(hi, lo, (*fo)[5], ptr[31 -  6]);
-//    MLA(hi, lo, (*fo)[4], ptr[31 -  8]);
-//    MLA(hi, lo, (*fo)[3], ptr[31 - 10]);
-//    MLA(hi, lo, (*fo)[2], ptr[31 - 12]);
-//    MLA(hi, lo, (*fo)[1], ptr[31 - 14]);
-//    MLA(hi, lo, (*fo)[0], ptr[31 - 16]);
-//
-//    ptr = *Dptr - pe;
-//    MLA(hi, lo, (*fe)[0], ptr[31 - 16]);
-//    MLA(hi, lo, (*fe)[1], ptr[31 - 14]);
-//    MLA(hi, lo, (*fe)[2], ptr[31 - 12]);
-//    MLA(hi, lo, (*fe)[3], ptr[31 - 10]);
-//    MLA(hi, lo, (*fe)[4], ptr[31 -  8]);
-//    MLA(hi, lo, (*fe)[5], ptr[31 -  6]);
-//    MLA(hi, lo, (*fe)[6], ptr[31 -  4]);
-//    MLA(hi, lo, (*fe)[7], ptr[31 -  2]);
-//
-//    *pcm2-- = MLZ(hi, lo);
-//  }
-//
-//  ++fo;
-//      }
-//
-//      ++Dptr;
-//
-//      ptr = *Dptr + po;
-//      ML0(hi, lo, (*fo)[0], ptr[ 0]);
-//      MLA(hi, lo, (*fo)[1], ptr[14]);
-//      MLA(hi, lo, (*fo)[2], ptr[12]);
-//      MLA(hi, lo, (*fo)[3], ptr[10]);
-//      MLA(hi, lo, (*fo)[4], ptr[ 8]);
-//      MLA(hi, lo, (*fo)[5], ptr[ 6]);
-//      MLA(hi, lo, (*fo)[6], ptr[ 4]);
-//      MLA(hi, lo, (*fo)[7], ptr[ 2]);
-//
-//      *pcm1 = -MLZ(hi, lo);
-//      pcm1 += 8;
-//
-//      phase = (phase + 1) % 16;
-//    }
-//  }
-//}
-
-/*
  * NAME:    synth.frame()
  * DESCRIPTION: perform PCM synthesis of frame subband samples
  */
@@ -1295,17 +1136,40 @@ Mad.Synth.prototype.frame = function (frame) {
     this.pcm.channels   = nch;
     this.pcm.length     = 32 * ns;
 
-    // console.log("ns: " + ns);
+    this.dct32 = function(_in, s, slot, lo, hi) {
+        Mad.Synth.dct32(_in[s], slot, lo, hi);
+    };
 
-    /*
-     if (frame.options & Mad.Option.HALFSAMPLERATE) {
-     this.pcm.samplerate /= 2;
-     this.pcm.length     /= 2;
-
-     throw new Error("HALFSAMPLERATE is not supported. What do you think? As if I have the time for this");
-     }
-     */
-
-    this.full(frame, nch, ns);
+    this.full(frame, nch, ns, 0);
     this.phase = (this.phase + ns) % 16;
-}
+
+};
+
+Mad.Synth.prototype.frameStretch = function (frame, factor) {
+    var nch = frame.header.nchannels();
+    var ns  = frame.header.nbsamples() * factor;
+    var inv = 1 / factor;
+
+    this.pcm.samples    = [[], []];
+    this.pcm.samplerate = frame.header.samplerate;
+    this.pcm.channels   = nch;
+    this.pcm.length     = 32 * ns;
+
+    this.dct32 = function(_in, s, slot, lo, hi) {
+        Mad.Synth.dct32(_in[(s * inv) >> 0], slot, lo, hi);
+    };
+
+    this.full(frame, nch, ns, 0);
+    this.phase = (this.phase + ns) % 16;
+};
+
+Mad.Synth.prototype.getPCM = function (out, off) {
+    var pcm = this.pcm.samples;
+    var len = this.pcm.length;
+
+    for(var ch = 0; ch < 2; ch++) {
+        for(var i = 0; i < len; i++) {
+            out[ch][i + off] = pcm[ch][i];
+        }
+    }
+};

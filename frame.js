@@ -345,6 +345,31 @@ Mad.Frame = function () {
     }
 };
 
+Mad.Frame.prototype.clone = function () {
+    var frame = new Mad.Frame();
+
+    frame.options = this.options;
+    frame.header = this.header;
+
+    for(var ch = 0; ch < 2; ch++) {
+        for(var grp = 0; grp < 36; grp++) {
+            for(var i = 0; i < 32; i++) {
+                frame.sbsample[ch][grp][i] = this.sbsample[ch][grp][i];
+            }
+        }
+    }
+    
+    for(var ch = 0; ch < 2; ch++) {
+        for(var sb = 0; sb < 32; sb++) {
+            for(var i = 0; i < 18; i++) {
+                frame.overlap[ch][sb][i] = this.overlap[ch][sb][i];
+            }
+        }
+    }
+
+    return frame;
+};
+
 Mad.Frame.decode = function(frame, stream) {
     frame.options = stream.options;
     

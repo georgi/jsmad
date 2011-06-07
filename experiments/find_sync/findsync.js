@@ -70,7 +70,7 @@ function readFile() {
               
               offset++;
               
-              if(offset >= synth.pcm.samples[0].length) {
+              if(offset >= synth.pcm.length) {
                   offset = 0;
               
                   frame = Mad.Frame.decode(frame, mpeg);
@@ -92,3 +92,4 @@ function readFile() {
     
     return;
 }
+
