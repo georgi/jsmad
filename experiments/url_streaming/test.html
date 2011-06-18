@@ -12,6 +12,7 @@
 <script type="text/javascript" src="../../synth.js"></script>
 
 <script type="text/javascript" src="../../bytestream.js"></script>
+<script type="text/javascript" src="../../ajaxstream.js"></script>
 <script type="text/javascript" src="../../filestream.js"></script>
 <script type="text/javascript" src="../../substream.js"></script>
 <script type="text/javascript" src="../../id3v22stream.js"></script>
@@ -21,15 +22,13 @@
 <script type="text/javascript" src="../../stringstream.js"></script>
 
 <script type="text/javascript" src="audiolib.js/lib/audiolib.js"></script>
-<script type="text/javascript" src="findsync.js"></script>
-
-<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script type="text/javascript" src="official.js"></script>
 </head>
 
 <body>
   <h1>Find sync test</h1>
-  <form id="uploadData">
-    Choose an MP3 file: <input id="fileChooser" type="file" onchange="readFile()"></input>
+  <form id="uploadData" action="#" onsubmit="readFile()">
+    Paste an MP3 URL: <input id="urlChooser" type="text" value="http://localhost:81/jsmad/experiments/node/radiohead.mp3"></input>
   </form>
   
   <div id='ID3'>
