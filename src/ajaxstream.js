@@ -27,11 +27,11 @@ Mad.AjaxStream = function(url) {
                 var callback = self.state['callbacks'][i];
                 
                 if (callback[0] < self.state['amountRead']) {
-					try {
-						callback[1]();
-					} catch (e) {
-						console.log(e);
-					}
+                                        try {
+                                                callback[1]();
+                                        } catch (e) {
+                                                console.log(e);
+                                        }
                 } else {
                     newCallbacks.push(callback);
                 }
@@ -41,7 +41,7 @@ Mad.AjaxStream = function(url) {
         }
         
         if (request.readyState == 4) {
-			self.state['amountRead'] = self.state['contentLength'];
+                        self.state['amountRead'] = self.state['contentLength'];
             for (var i = 0; i < self.state['callbacks'].length; i++) {
                 var callback = self.state['callbacks'][i];
                 callback[1]();
@@ -66,19 +66,19 @@ Mad.AjaxStream.prototype.updateBuffer = function() {
     if (!this.state['finalAmount']) {
         this.state['arrayBuffer'] = this.state['request'].mozResponseArrayBuffer;
         if(this.state['arrayBuffer']) {
-			this.state['byteBuffer'] = new Uint8Array(this.state['arrayBuffer']);
-			this.state['amountRead'] = this.state['arrayBuffer'].byteLength;
-		} else {
-			this.state['buffer'] = this.state['request'].responseText
-			this.state['amountRead'] = this.state['buffer'].length;
-		}
+                        this.state['byteBuffer'] = new Uint8Array(this.state['arrayBuffer']);
+                        this.state['amountRead'] = this.state['arrayBuffer'].byteLength;
+                } else {
+                        this.state['buffer'] = this.state['request'].responseText
+                        this.state['amountRead'] = this.state['buffer'].length;
+                }
         
-		this.state['contentLength'] = this.state['request'].getResponseHeader('Content-Length');
-		if(!this.state['contentLength']) {
-			// if the server doesn't send a Content-Length Header, just use amountRead instead
-			// it's less precise at first, but once everything is buffered it becomes accurate.
-			this.state['contentLength'] = this.state['amountRead'];
-		}
+                this.state['contentLength'] = this.state['request'].getResponseHeader('Content-Length');
+                if(!this.state['contentLength']) {
+                        // if the server doesn't send a Content-Length Header, just use amountRead instead
+                        // it's less precise at first, but once everything is buffered it becomes accurate.
+                        this.state['contentLength'] = this.state['amountRead'];
+                }
     
         if (!this.state['inProgress']) {
             this.state['finalAmount'] = true;
@@ -93,7 +93,7 @@ Mad.AjaxStream.prototype.updateBuffer = function() {
 Mad.AjaxStream.prototype.absoluteAvailable = function(n, updated) {
     if (n > this.state['amountRead']) {
         if (updated) {
-			throw new Error("buffer underflow with absoluteAvailable!");
+                        throw new Error("buffer underflow with absoluteAvailable!");
             return false;
         } else if (this.updateBuffer()) {
             return this.absoluteAvailable(n, true);
@@ -125,35 +125,35 @@ Mad.AjaxStream.prototype.peek = function(n) {
         
         return result;
     } else {
-		throw new Error("buffer underflow with peek!");
+                throw new Error("buffer underflow with peek!");
         return;
     }
 }
 
 Mad.AjaxStream.prototype.get = function(offset, length) {
     if (this.absoluteAvailable(offset + length)) {
-		var tmpbuffer = "";
-		if(this.state['byteBuffer']) {
-			for(var i = offset; i < offset + length; i += 1) {
-				tmpbuffer = tmpbuffer + String.fromCharCode(this.state['byteBuffer'][i]);
-			}
-		} else {
-			for(var i = offset; i < offset + length; i += 1) {
-				tmpbuffer = tmpbuffer + String.fromCharCode(this.state['buffer'].charCodeAt(i) & 0xff);
-			}
-		}
-		return tmpbuffer;
+                var tmpbuffer = "";
+                if(this.state['byteBuffer']) {
+                        for(var i = offset; i < offset + length; i += 1) {
+                                tmpbuffer = tmpbuffer + String.fromCharCode(this.state['byteBuffer'][i]);
+                        }
+                } else {
+                        for(var i = offset; i < offset + length; i += 1) {
+                                tmpbuffer = tmpbuffer + String.fromCharCode(this.state['buffer'].charCodeAt(i) & 0xff);
+                        }
+                }
+                return tmpbuffer;
     } else {
-		throw new Error("buffer underflow with get!");        
+                throw new Error("buffer underflow with get!");        
         return;
     }
 }
 
 Mad.ByteStream.prototype.getU8 = function(offset, bigEndian) {
-	if(this.state['byteBuffer']) {
-		return this.state['byteBuffer'][offset];
-	}
-		
+        if(this.state['byteBuffer']) {
+                return this.state['byteBuffer'][offset];
+        }
+                
     return this.get(offset, 1).charCodeAt(0);
 }
 
